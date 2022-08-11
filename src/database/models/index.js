@@ -42,7 +42,7 @@ db.Sequelize = Sequelize;
 sequelize
   .authenticate()
   .then(() => {
-    console.log("Connected! Database Status : ON 🔥.");
+    console.log("Connected! Database Status : ON 🌎🔥💻.");
   })
   .catch((err) => {
     console.error("Failed to connect! Database Status : OFF:", err);
