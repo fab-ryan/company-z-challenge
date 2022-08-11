@@ -3,7 +3,7 @@ dotenv.config();
 module.exports = {
   development: {
     JWT_SECRET: process.env.JWT_SECRET,
-    url: process.env.DATABASE,
+    url: process.env.DEV_URL,
     dialect: "postgres",
     port: process.env.PORT,
     USER_EMAIL: process.env.USER_EMAIL,
