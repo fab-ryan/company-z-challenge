@@ -1,5 +1,5 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -9,6 +9,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+
+      this.hasOne(models.Profile, {
+        foreignKey: 'userId',
+        as: 'profile',
+        targetKey: 'userId',
+      });
     }
   }
   User.init(
@@ -28,20 +34,29 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      role: {
+        type: DataTypes.ENUM('user', 'admin'),
+        defaultValue: 'user',
+      },
       otp: {
         type: DataTypes.STRING,
       },
-      expiration_time: DataTypes.DATE,
+      otpExpiry: DataTypes.DATE,
+
       createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: DataTypes.DATE,
       },
     },
     {
       sequelize,
-      modelName: "User",
+      modelName: 'User',
     }
   );
-  User.removeAttribute("id");
+  User.removeAttribute('id');
   return User;
 };

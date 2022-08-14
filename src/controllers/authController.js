@@ -1,6 +1,6 @@
-import model from "../database/models";
-import { UserValidator } from "../validator";
-import bcrypt from "bcryptjs";
+import model from '../database/models';
+import { UserValidator, LoginValidator } from '../validator';
+import bcrypt from 'bcryptjs';
 import {
   AddMinutesToDate,
   generateOTP,
@@ -9,17 +9,21 @@ import {
   sendSignUpOtp,
   verifyDate,
   assignToken,
-} from "../utils";
+  sendForgotPasswordMessage,
+  sendForgotPasswordOtp,
+} from '../utils';
+import redisClient from '../utils/redis';
+import jwt from "jsonwebtoken"
+
 const User = model.User;
 const registerUser = async (req, res) => {
   const { error } = UserValidator(req.body);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
-
   const userFound = await User.findOne({ where: { email: req.body.email } });
   if (userFound) {
-    return res.status(400).json({ error: "User already exists" });
+    return res.status(400).json({ error: 'User already exists' });
   } else {
     try {
       const salt = bcrypt.genSaltSync(10);
@@ -27,16 +31,17 @@ const registerUser = async (req, res) => {
       const user = await new User({
         email: req.body.email,
         password: hash,
+        role: req.body.role,
       });
       await user.save();
       user.password = undefined;
       const otp = generateOTP();
-      const expiration_time = AddMinutesToDate(generateDate(), 4);
-      await user.update({ otp, expiration_time });
+      const otpExpiry = AddMinutesToDate(generateDate(), 4);
+      await user.update({ otp, otpExpiry });
       const message = signUpMessage(otp);
       sendSignUpOtp(message, user.email);
       res.status(201).json({
-        message: "User created successfully",
+        message: 'User created successfully',
         user,
       });
     } catch (error) {
@@ -47,33 +52,38 @@ const registerUser = async (req, res) => {
 const getOtpVerification = async (req, res) => {
   try {
     const otp = req.body.otp;
-    const user = await User.findOne({ where: { otp } });
+    const user = await User.findOne({
+      where: { otp },
+      include: [{ model: model.Profile, as: 'profile' }],
+    });
     if (user) {
       const currentDate = generateDate();
-      if (verifyDate.compare(user.expiration_time, currentDate) === 1) {
+      if (verifyDate.compare(user.otpExpiry, currentDate) === 1) {
         if (user.otp === otp) {
-          await user.update({ otp: null, expiration_time: null });
+          await user.update({ otp: null, otpExpiry: null });
           const payload = {
             userId: user.userId,
             email: user.email,
+            profile: user.profile,
+            role: user.role,
           };
           const token = assignToken(payload);
+          await redisClient.set(token, token);
           res.status(200).json({
-            message: "OTP verified successfully",
+            message: 'OTP verified successfully',
             token,
           });
         } else {
-          console.log(user.otp);
           res.status(400).json({
-            message: "OTP does not match",
+            message: 'OTP does not match',
           });
         }
       } else {
-        await user.update({ otp: null, expiration_time: null });
-        res.status(400).json({ error: "OTP expired" });
+        await user.update({ otp: null, otpExpiry: null });
+        res.status(400).json({ error: 'OTP expired' });
       }
     } else {
-      res.status(400).json({ error: "OTP does not exists" });
+      res.status(400).json({ error: 'OTP does not exists' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -86,16 +96,16 @@ const resendOtp = async (req, res) => {
 
     if (user) {
       const otp = generateOTP();
-      const expiration_time = AddMinutesToDate(generateDate(), 4);
-      await user.update({ otp, expiration_time });
+      const otpExpiry = AddMinutesToDate(generateDate(), 4);
+      await user.update({ otp, otpExpiry });
       const message = signUpMessage(otp);
       sendSignUpOtp(message, user.email);
       res.status(200).json({
-        message: "OTP sent successfully",
+        message: 'OTP sent successfully',
       });
     } else {
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error) {
@@ -104,9 +114,17 @@ const resendOtp = async (req, res) => {
 };
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.findAndCountAll();
+    console.log(req);
+    const users = await User.findAndCountAll({
+      include: [
+        {
+          model: model.Profile,
+          as: 'profile',
+        },
+      ],
+    });
     res.status(200).json({
-      message: "All users",
+      message: 'All users',
       users,
     });
   } catch (error) {
@@ -117,7 +135,7 @@ const getUser = async (req, res) => {
   try {
     const user = await User.findOne({ where: { id: req.params.id } });
     res.status(200).json({
-      message: "User found",
+      message: 'User found',
       user,
     });
   } catch (error) {
@@ -126,40 +144,50 @@ const getUser = async (req, res) => {
 };
 const resetPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { id: req.params.id } });
-
-    if (user) {
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(req.body.password, salt);
-
-      await User.update({ password: hash }, { where: { id: req.params.id } });
-      res.status(200).json({
-        message: "Password reset successfully",
+    const token = req.params.token;
+    const tokenVerify = await jwt.verify(token, process.env.JWT_SECRET);
+    if (tokenVerify) {
+      const user = await User.findOne({
+        where: { userId: tokenVerify.userId },
       });
+      if (user) {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(req.body.password, salt);
+        await user.update({ password: hash });
+        res.status(200).json({
+          message: 'Password reset successfully',
+        });
+      } else {
+        res.status(404).json({
+          message: 'User not found',
+        });
+      }
     } else {
-      res.status(404).json({
-        message: "User not found",
+      res.status(400).json({
+        message: 'Invalid token',
       });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-const forgetPassword = async (req, res) => {
+const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email: req.body.email } });
 
     if (user) {
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(req.body.password, salt);
-
-      await User.update({ password: hash }, { where: { id: user.id } });
+      const token = assignToken({ userId: user.userId }, '3m');
+      await redisClient.set(token, token);
+      const FRONTEND_URL = process.env.FRONTEND_URL;
+      const message = sendForgotPasswordMessage(`${FRONTEND_URL}/?${token}`);
+      sendForgotPasswordOtp(message, user.email);
       res.status(200).json({
-        message: "Password reset successfully",
+        message: 'email sent successfully',
+        token,
       });
     } else {
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error) {
@@ -181,25 +209,32 @@ const changePassword = async (req, res) => {
 
         await User.update({ password: hash }, { where: { id: req.params.id } });
         res.status(200).json({
-          message: "Password changed successfully",
+          message: 'Password changed successfully',
         });
       } else {
         res.status(400).json({
-          message: "Password does not match",
+          message: 'Password does not match',
         });
       }
     } else {
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-const loginUser=async (req, res) => {
+const loginUser = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { email: req.body.email } });
+    const { error } = LoginValidator(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    const user = await User.findOne({
+      where: { email: req.body.email },
+      include: [{ model: model.Profile, as: 'profile' }],
+    });
     if (user) {
       const passwordMatch = bcrypt.compareSync(
         req.body.password,
@@ -209,24 +244,50 @@ const loginUser=async (req, res) => {
         const payload = {
           userId: user.userId,
           email: user.email,
+          profile: user.profile,
         };
+        user.password = undefined;
         const token = assignToken(payload);
+        await redisClient.set(token, token);
         res.status(200).json({
-          message: "User logged in successfully",
+          message: 'User logged in successfully',
           token,
+          user,
         });
       } else {
         res.status(400).json({
-          message: "Password does not match",
+          message: 'Password does not match',
         });
       }
     } else {
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
-  } 
-}
-export { registerUser, getAllUsers, getUser, getOtpVerification, resendOtp };
+  }
+};
+const logoutUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    await redisClient.del(token);
+    res.status(200).json({
+      message: 'User logged out successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export {
+  registerUser,
+  getAllUsers,
+  getUser,
+  getOtpVerification,
+  resendOtp,
+  loginUser,
+  logoutUser,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+};
