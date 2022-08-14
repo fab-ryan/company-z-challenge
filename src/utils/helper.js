@@ -1,4 +1,4 @@
-import otpGenerator from "otp-generator";
+import otpGenerator from 'otp-generator';
 export const AddMinutesToDate = (date, minutes) => {
   return new Date(date.getTime() + minutes * 60000);
 };
@@ -27,10 +27,22 @@ export const signUpMessage = (OTP) => {
  </div>
   `;
 };
+export const sendForgotPasswordMessage = (url) => {
+  return `
+    <div
+        class="container"
+        style="max-width: 90%; margin: auto; padding-top: 20px"
+      >
+        <h2>Welcome to the club.</h2>
+        <h4>You are officially In ✔</h4>
+        <p style="margin-bottom: 30px;">Please click on this link to reset your password.</p>
+        <h1 style="font-size: 40px; letter-spacing: 4px; text-align:center;"><a href="${url}">Reset Password</></h1>
+  </div>
+    `;
+};
 
 export const verifyDate = {
   convert: function (d) {
-    
     return d.constructor === Date
       ? d
       : d.constructor === Array
@@ -39,7 +51,7 @@ export const verifyDate = {
       ? new Date(d)
       : d.constructor === String
       ? new Date(d)
-      : typeof d === "object"
+      : typeof d === 'object'
       ? new Date(d.year, d.month, d.date)
       : NaN;
   },

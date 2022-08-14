@@ -17,8 +17,15 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      role: {
+        type: Sequelize.ENUM("user", "admin"),
+        defaultValue: "user",
+      },
       otp: {
         type: Sequelize.STRING,
+      },
+      otpExpiry: {
+        type: Sequelize.DATE,
       },
       expiration_time: Sequelize.DATE,
       createdAt: {

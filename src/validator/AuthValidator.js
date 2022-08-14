@@ -1,6 +1,13 @@
-import joi from "joi";
-import { joiPasswordExtendCore } from "joi-password";
+import joi from 'joi';
+import { joiPasswordExtendCore } from 'joi-password';
 
+const options = {
+  errors: {
+    wrap: {
+      label: '',
+    },
+  },
+};
 const UserValidator = (data) => {
   const joiPassword = joi.extend(joiPasswordExtendCore);
   const Schema = joi.object({
@@ -13,20 +20,35 @@ const UserValidator = (data) => {
       .minOfNumeric(2)
       .noWhiteSpaces()
       .messages({
-        "password.minOfUppercase":
-          "{#label} should contain at least {#min} uppercase character",
-        "password.minOfSpecialCharacters":
-          "{#label} should contain at least {#min} special character",
-        "password.minOfLowercase":
-          "{#label} should contain at least {#min} lowercase character",
-        "password.minOfNumeric":
-          "{#label} should contain at least {#min} numeric character",
-        "password.noWhiteSpaces": "{#label} should not contain white spaces",
+        'password.minOfUppercase':
+          '{#label} should contain at least {#min} uppercase character',
+        'password.minOfSpecialCharacters':
+          '{#label} should contain at least {#min} special character',
+        'password.minOfLowercase':
+          '{#label} should contain at least {#min} lowercase character',
+        'password.minOfNumeric':
+          '{#label} should contain at least {#min} numeric character',
+        'password.noWhiteSpaces': '{#label} should not contain white spaces',
       })
       .required(),
-    confirmPassword: joi.ref("password"),
+    confirmPassword: joi.ref('password'),
+    role: joi.string().required().optional(),
   });
-  return Schema.validate(data);
+  return Schema.validate(data, options);
 };
 
-export { UserValidator };
+const LoginValidator = (data) => {
+  const Schema = joi.object({
+    email: joi
+      .string()
+      .email()
+      .required()
+      .messages({ 'any.only': 'Email is required' }),
+    password: joi
+      .string()
+      .required()
+      .messages({ 'any.only': 'Password is required' }),
+  });
+  return Schema.validate(data, options);
+};
+export { UserValidator, LoginValidator };
