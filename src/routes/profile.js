@@ -5,6 +5,7 @@ import {
   deleteProfile,
   completeProfile,
   verifyProfile,
+  getAllProfiles,
 } from '../controllers/profileController';
 import {
   multerMiddleware,
@@ -27,6 +28,7 @@ route.patch(
   multerMiddleware.single('documentPhoto'),
   completeProfile
 );
+route.get('/all', AuthMiddleware, RoleMiddleware, getAllProfiles);
 route.patch(
   '/verify/account/:profileId',
   AuthMiddleware,

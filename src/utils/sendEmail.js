@@ -9,12 +9,13 @@ let transporter = nodemailer.createTransport({
     pass: process.env.USER_PASSWORD,
   },
 });
-function sendSignUpOtp(message, toEmail) {
+function sendEmail(subject, message, toEmail) {
+  console.log(message, subject);
   let mailOptions = {
-    from: process.env.USER_EMAIL, 
-    to: toEmail, 
-    subject: 'SignUp OPT Verfication',
-    html: message, 
+    from: process.env.USER_EMAIL,
+    to: toEmail,
+    subject: subject,
+    html: message,
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -25,10 +26,10 @@ function sendSignUpOtp(message, toEmail) {
 
 function sendForgotPasswordOtp(message, toEmail) {
   let mailOptions = {
-    from: process.env.USER_EMAIL, 
-    to: toEmail, 
+    from: process.env.USER_EMAIL,
+    to: toEmail,
     subject: 'Forgot Password Verfication',
-    html: message, 
+    html: message,
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -36,4 +37,4 @@ function sendForgotPasswordOtp(message, toEmail) {
     }
   });
 }
-export { sendSignUpOtp,sendForgotPasswordOtp };
+export { sendEmail, sendForgotPasswordOtp };
