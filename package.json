@@ -39,16 +39,16 @@
     "sequelize": "^6.21.3",
     "sequelize-cli": "^6.4.1",
     "swagger-ui-express": "^4.5.0",
-    "uuid": "^8.3.2"
-  },
-  "devDependencies": {
+    "uuid": "^8.3.2",
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.18.10",
     "@babel/node": "^7.18.10",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-transform-runtime": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
-    "@babel/register": "^7.18.9",
+    "@babel/register": "^7.18.9"
+  },
+  "devDependencies": {
     "dotenv": "^16.0.1",
     "nodemon": "^2.0.19"
   }
