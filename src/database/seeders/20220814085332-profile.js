@@ -19,6 +19,8 @@ module.exports = {
         age: '22',
         profilePhoto:
           'http://res.cloudinary.com/drpezmjt1/image/upload/v1657295578/ajgnwrfuledutoksmszs.jpg',
+        verified: 'VERIFIED',
+        nationalIdNumber: '12345678902931',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
