@@ -1,19 +1,25 @@
 import model from '../database/models';
-import { UserValidator, LoginValidator } from '../validator';
+import {
+  UserValidator,
+  LoginValidator,
+  passwordValidator,
+  changePasswordValidator,
+} from '../validator';
 import bcrypt from 'bcryptjs';
 import {
   AddMinutesToDate,
   generateOTP,
   generateDate,
-  signUpMessage,
-  sendSignUpOtp,
+  LoginOtpMessage,
+  sendEmail,
   verifyDate,
   assignToken,
   sendForgotPasswordMessage,
   sendForgotPasswordOtp,
+  NotificationLogin,
 } from '../utils';
 import redisClient from '../utils/redis';
-import jwt from "jsonwebtoken"
+import jwt from 'jsonwebtoken';
 
 const User = model.User;
 const registerUser = async (req, res) => {
@@ -35,11 +41,10 @@ const registerUser = async (req, res) => {
       });
       await user.save();
       user.password = undefined;
-      const otp = generateOTP();
-      const otpExpiry = AddMinutesToDate(generateDate(), 4);
-      await user.update({ otp, otpExpiry });
-      const message = signUpMessage(otp);
-      sendSignUpOtp(message, user.email);
+      const message = NotificationLogin(
+        `${process.env.FRONTEND_URL}/login/?email=${user.email}?password=${req.body.password}`
+      );
+      sendEmail('You have successfully registered', message, user.email);
       res.status(201).json({
         message: 'User created successfully',
         user,
@@ -71,6 +76,7 @@ const getOtpVerification = async (req, res) => {
           await redisClient.set(token, token);
           res.status(200).json({
             message: 'OTP verified successfully',
+            payload,
             token,
           });
         } else {
@@ -98,8 +104,8 @@ const resendOtp = async (req, res) => {
       const otp = generateOTP();
       const otpExpiry = AddMinutesToDate(generateDate(), 4);
       await user.update({ otp, otpExpiry });
-      const message = signUpMessage(otp);
-      sendSignUpOtp(message, user.email);
+      const message = LoginOtpMessage(otp);
+      sendEmail('New verification OTP', message, user.email);
       res.status(200).json({
         message: 'OTP sent successfully',
       });
@@ -146,6 +152,8 @@ const resetPassword = async (req, res) => {
   try {
     const token = req.params.token;
     const tokenVerify = await jwt.verify(token, process.env.JWT_SECRET);
+    const { error } = passwordValidator(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
     if (tokenVerify) {
       const user = await User.findOne({
         where: { userId: tokenVerify.userId },
@@ -196,18 +204,22 @@ const forgotPassword = async (req, res) => {
 };
 const changePassword = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { id: req.params.id } });
-
+    const user = await User.findOne({ where: { userId: req.user.userId } });
+    const { error } = changePasswordValidator(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
     if (user) {
       const passwordMatch = bcrypt.compareSync(
-        req.body.password,
+        req.body.currentPassword,
         user.password
       );
       if (passwordMatch) {
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(req.body.newPassword, salt);
 
-        await User.update({ password: hash }, { where: { id: req.params.id } });
+        await User.update(
+          { password: hash },
+          { where: { userId: req.user.userId } }
+        );
         res.status(200).json({
           message: 'Password changed successfully',
         });
@@ -241,18 +253,13 @@ const loginUser = async (req, res) => {
         user.password
       );
       if (passwordMatch) {
-        const payload = {
-          userId: user.userId,
-          email: user.email,
-          profile: user.profile,
-        };
         user.password = undefined;
-        const token = assignToken(payload);
-        await redisClient.set(token, token);
-        res.status(200).json({
-          message: 'User logged in successfully',
-          token,
-          user,
+        const otp = generateOTP();
+        const otpExpiry = AddMinutesToDate(generateDate(), 4);
+        await user.update({ otp, otpExpiry });
+        sendEmail('OTP Verification', LoginOtpMessage(otp), user.email);
+        res.status(201).json({
+          message: 'Verify user to continue',
         });
       } else {
         res.status(400).json({
@@ -272,9 +279,29 @@ const logoutUser = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     await redisClient.del(token);
-    res.status(200).json({
+    res.status(201).json({
       message: 'User logged out successfully',
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const getSingleUser = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: { userId: req.user.userId },
+      include: [{ model: model.Profile, as: 'profile' }],
+    });
+    if (user) {
+      res.status(200).json({
+        message: 'User profile found',
+        user,
+      });
+    } else {
+      res.status(404).json({
+        message: 'User not found',
+      });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -290,4 +317,5 @@ export {
   changePassword,
   forgotPassword,
   resetPassword,
+  getSingleUser,
 };

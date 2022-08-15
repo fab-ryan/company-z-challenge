@@ -14,7 +14,7 @@ export const generateDate = () => {
   return new Date();
 };
 
-export const signUpMessage = (OTP) => {
+export const LoginOtpMessage = (OTP) => {
   return `
     <div
       class="container"
@@ -22,7 +22,7 @@ export const signUpMessage = (OTP) => {
     >
       <h2>Welcome to the club.</h2>
       <h4>You are officially In ✔</h4>
-      <p style="margin-bottom: 30px;">Please enter the sign up OTP to get started</p>
+      <p style="margin-bottom: 30px;">Please enter  OTP to verify and  get started</p>
       <h1 style="font-size: 40px; letter-spacing: 4px; text-align:center;">${OTP}</h1>
  </div>
   `;
@@ -33,13 +33,26 @@ export const sendForgotPasswordMessage = (url) => {
         class="container"
         style="max-width: 90%; margin: auto; padding-top: 20px"
       >
-        <h2>Welcome to the club.</h2>
+        <h2>Welcome to the COMPANY Z.</h2>
         <h4>You are officially In ✔</h4>
         <p style="margin-bottom: 30px;">Please click on this link to reset your password.</p>
         <h1 style="font-size: 40px; letter-spacing: 4px; text-align:center;"><a href="${url}">Reset Password</></h1>
   </div>
     `;
 };
+export const NotificationLogin=(url)=>{
+  return `
+    <div
+        class="container"
+        style="max-width: 90%; margin: auto; padding-top: 20px"
+      >
+        <h2>Welcome to the COMPANY Z.</h2>
+        <h4>You are officially In ✔</h4>
+        <p style="margin-bottom: 30px;">Please click on this link to login.</p>
+        <h1 style="font-size: 40px; letter-spacing: 4px; text-align:center;"><a href="${url}">Login</></h1>
+  </div>
+    `;
+}
 
 export const verifyDate = {
   convert: function (d) {

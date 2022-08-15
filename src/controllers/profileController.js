@@ -2,6 +2,31 @@ import model from '../database/models';
 import { ProfileValidator, verificationValidator } from '../validator';
 import { imageUpload } from '../utils';
 const Profile = model.Profile;
+const getAllProfiles = async (req, res) => {
+  try {
+    const profiles = await Profile.findAnCountAll({
+      include: [
+        {
+          model: model.User,
+          as: 'user',
+          attributes: ['email'],
+        },
+      ],
+    });
+    if (profiles) {
+      return res.status(200).json({
+        message: 'Profiles found',
+        profiles,
+      });
+    } else {
+      return res.status(404).json({
+        message: 'Profiles not found',
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 const getProfile = async (req, res) => {
   try {
     const profile = await Profile.findOne({
@@ -30,6 +55,7 @@ const getProfile = async (req, res) => {
   }
 };
 const createProfile = async (req, res) => {
+  console.log(req.body);
   const { error } = ProfileValidator(req.body);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
@@ -98,7 +124,7 @@ const deleteProfile = async (req, res) => {
     });
     if (profile) {
       await profile.destroy();
-      return res.status(200).json({
+      return res.status(201).json({
         message: 'Profile deleted successfully',
       });
     } else {
@@ -129,7 +155,7 @@ const completeProfile = async (req, res) => {
         verified: 'PENDING',
         updatedAt: new Date(),
       });
-      return res.status(200).json({
+      return res.status(201).json({
         message: 'Profile verified successfully',
         profile,
       });
@@ -152,7 +178,7 @@ const verifyProfile = async (req, res) => {
         verified: 'VERIFIED',
         updatedAt: new Date(),
       });
-      return res.status(200).json({
+      return res.status(201).json({
         message: 'Profile verified successfully',
         profile,
       });
@@ -172,4 +198,5 @@ export {
   deleteProfile,
   completeProfile,
   verifyProfile,
+  getAllProfiles,
 };
