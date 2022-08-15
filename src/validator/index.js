@@ -1,2 +1,2 @@
-export * from "./authValidator"
-export * from "./profileValidator"
+export * from './profileValidator';
+export * from './authValidator';
