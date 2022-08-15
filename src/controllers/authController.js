@@ -108,6 +108,7 @@ const resendOtp = async (req, res) => {
       sendEmail('New verification OTP', message, user.email);
       res.status(200).json({
         message: 'OTP sent successfully',
+        otp,
       });
     } else {
       res.status(404).json({

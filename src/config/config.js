@@ -3,7 +3,7 @@ dotenv.config();
 module.exports = {
   development: {
     JWT_SECRET: process.env.JWT_SECRET,
-    url: process.env.DEV_URL,
+    url: process.env.DATABASE_URL,
     dialect: "postgres",
     port: process.env.PORT,
     USER_EMAIL: process.env.USER_EMAIL,
@@ -15,15 +15,6 @@ module.exports = {
     REDIS_PWD: process.env.REDIS_PWD,
     FRONTEND_URL: process.env.FRONTEND_URL,
     
-  },
-  test: {
-    JWT_SECRET: process.env.JWT_SECRET,
-    url: process.env.DATABASE_URL,
-    dialect: "postgres",
-    port: process.env.PORT,
-    USER_EMAIL: process.env.USER_EMAIL,
-    USER_PASSWORD: process.env.USER_PASSWORD,
-
   },
   production: {
     JWT_SECRET: process.env.JWT_SECRET,

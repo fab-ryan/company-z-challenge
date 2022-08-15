@@ -9,7 +9,7 @@ module.exports = {
         {
         
           userId: uuidv4(),
-          email: 'admin@admin.com',
+          email: 'ryan.fab@outlook.com',
           role: 'admin',
           password: await bcrypt.hash('Admin@123', 12),
           createdAt: new Date(),
