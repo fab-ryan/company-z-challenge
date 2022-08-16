@@ -174,7 +174,7 @@ export const profile = {
       },
     },
   },
-  '/api/profile/verify/account/:profileId': {
+  '/api/profile/verify/account/{profileId}': {
     patch: {
       tags: ['Profile'],
       summary: 'This will verify a profile',

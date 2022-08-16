@@ -121,7 +121,6 @@ const resendOtp = async (req, res) => {
 };
 const getAllUsers = async (req, res) => {
   try {
-    console.log(req);
     const users = await User.findAndCountAll({
       include: [
         {
@@ -261,6 +260,7 @@ const loginUser = async (req, res) => {
         sendEmail('OTP Verification', LoginOtpMessage(otp), user.email);
         res.status(201).json({
           message: 'Verify user to continue',
+          otp,
         });
       } else {
         res.status(400).json({

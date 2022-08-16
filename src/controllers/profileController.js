@@ -1,10 +1,10 @@
 import model from '../database/models';
 import { ProfileValidator, verificationValidator } from '../validator';
-import { imageUpload } from '../utils';
+import { imageUpload, VerificationNotification, sendEmail } from '../utils';
 const Profile = model.Profile;
 const getAllProfiles = async (req, res) => {
   try {
-    const profiles = await Profile.findAnCountAll({
+    const profiles = await Profile.findAndCountAll({
       include: [
         {
           model: model.User,
@@ -155,6 +155,7 @@ const completeProfile = async (req, res) => {
         verified: 'PENDING',
         updatedAt: new Date(),
       });
+
       return res.status(201).json({
         message: 'Profile verified successfully',
         profile,
@@ -172,12 +173,21 @@ const verifyProfile = async (req, res) => {
   try {
     const profile = await Profile.findOne({
       where: { profileId: req.params.profileId },
+      include: [
+        {
+          model: model.User,
+          as: 'user',
+          attributes: ['email'],
+        },
+      ],
     });
     if (profile) {
       await profile.update({
         verified: 'VERIFIED',
         updatedAt: new Date(),
       });
+      const message = VerificationNotification(profile);
+      sendEmail('verification', message, profile.user.email);
       return res.status(201).json({
         message: 'Profile verified successfully',
         profile,

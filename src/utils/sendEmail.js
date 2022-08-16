@@ -10,7 +10,6 @@ let transporter = nodemailer.createTransport({
   },
 });
 function sendEmail(subject, message, toEmail) {
-  console.log(message, subject);
   let mailOptions = {
     from: process.env.USER_EMAIL,
     to: toEmail,
