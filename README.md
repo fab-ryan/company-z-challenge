@@ -3,7 +3,7 @@
 ## How to run this
 - first clone this [repo](https://github.com/fab-ryan/company-z-challenge/)
 - then run command in cmd or terminal `npm run install` to install dependencies and packages.
-- copy `.env.example` to `.env`, fill all variable as suggested.
+- copy `.env.example` to `.env`, fill all variable as suggested in `.env`.
 - create database in postgress also register it in `.env`
 - to create migration in database run this command in cmd and terminal `npm run migrate` 
 - insert default data like for administrator(**admin**) run command `npm run seed` this will seed default value
