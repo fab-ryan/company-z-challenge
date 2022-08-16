@@ -10,3 +10,24 @@
 - after that run command in cmd or terminal `npm run build` to build project
 - once build command successful works 
 ## How to test
+-  run `npm start` to start server 
+-  admin user as default his email: `admin@admin.com` password: `Admin@123`
+-  this has different endpoint each start with `api`
+#### List of Endpoint
+- `/api/` starting point welcome
+- `/api/user/register` for register
+- `/api/user/login` for login
+- `/api/user/verify` for verification token
+- `/api/user/resend/:userId` for resending OTP verification in-order to do two factor-authantication
+- `/api/user` for getting user information about logged one
+- `/api/user/all` get all user detail but this will be done only admin.
+- `/api/user/forgot` user send email for resetting password
+- `/api/user/reset/:token` reset password using token send to email provided
+- `/api/user/change` to change old password to new password
+- `/api/profile` create profile and this will be done only to logged user only, getting user information, deleting user profile
+- `/api/profile/complete` to complete user profile by filling national Id or passport number and also document photo
+- `/api/profile/verify/account/:profileId` this will be done only admin to verify completed profile
+- `/api/profile/all` get all profile but this will be done by administration user
+### documentation links and hosted link
+- [https://company-z-challenge.herokuapp.com/api-docs](https://company-z-challenge.herokuapp.com/api-docs) documentation link
+- [https://company-z-challenge.herokuapp.com/api](https://company-z-challenge.herokuapp.com/api) hosted Link
