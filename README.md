@@ -31,3 +31,29 @@
 ### documentation links and hosted link
 - [https://company-z-challenge.herokuapp.com/api-docs](https://company-z-challenge.herokuapp.com/api-docs) documentation link
 - [https://company-z-challenge.herokuapp.com/api](https://company-z-challenge.herokuapp.com/api) hosted Link
+## environment variable 
+> PORT=5000
+
+> NODE_ENV=development
+
+> URL=http://localhost:$PORT
+
+> DATABASE_URL=
+
+> JWT_SECRET=secretGHJKL456vbnmjhgf3456789uiy234!!
+
+> USER_EMAIL=250.n.fabrice@gmail.com
+
+> USER_PASSWORD=kejprmdswsjducmw
+
+> REDIS_URL=redis://redis-13648.c251.east-us-mz.azure.cloud.redislabs.com:13648
+
+> REDIS_PWD=I3eanq6ozO0zILla51LfVNyZKg7pLIM3
+
+> CLOUDINARY_NAME=ryan-fab
+
+> CLOUDINARY_API_KEY=329394397286775
+
+> CLOUDINARY_API_SECRET=WTEH9SVjjCbp-bZPoiNcnCNN0NU
+
+> FRONTEND_URL=http://localhost:3000
