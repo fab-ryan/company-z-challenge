@@ -53,7 +53,19 @@ export const NotificationLogin=(url)=>{
   </div>
     `;
 }
-
+export const VerificationNotification=(user)=>{
+  return `
+  <div
+      class="container"
+      style="max-width: 90%; margin: auto; padding-top: 20px"
+    >
+      <h2>Welcome to the COMPANY Z.</h2>
+      <h4>user verification</h4>
+      <p style="margin-bottom: 30px;">Dear ${user.firstName} your account have been approved .</p>
+      <h1 style="font-size: 40px; letter-spacing: 4px; text-align:center;">VERIFIED</h1>
+</div>
+  `;
+}
 export const verifyDate = {
   convert: function (d) {
     return d.constructor === Date
