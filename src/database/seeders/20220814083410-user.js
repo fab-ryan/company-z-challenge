@@ -1,8 +1,9 @@
 'use strict';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 module.exports = {
   async up(queryInterface, Sequelize) {
+    
     await queryInterface.bulkInsert(
       'Users',
       [
