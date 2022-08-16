@@ -1,15 +1,14 @@
 'use strict';
 import bcrypt from 'bcrypt';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
       'Users',
       [
         {
-        
           userId: uuidv4(),
-          email: 'ryan.fab@outlook.com',
+          email: 'admin@admin.com',
           role: 'admin',
           password: await bcrypt.hash('Admin@123', 12),
           createdAt: new Date(),
