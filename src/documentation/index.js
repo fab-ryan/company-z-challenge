@@ -15,8 +15,8 @@ const definitions = {
 const config = {
   swagger: '2.0',
   info: {
-    title: 'Church services API ',
-    description: 'This is team project,Dominators team',
+    title: 'Company Z API ',
+    description: 'This is Company Z challenge',
     version: '1.0.0',
     contact: {
       name: 'ryan fab developer',
