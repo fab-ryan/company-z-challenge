@@ -105,7 +105,7 @@ const changePasswordValidator = (data) => {
         'password.noWhiteSpaces': '{#label} should not contain white spaces',
       })
       .required(),
-    newConfirmPassword: joi.ref('password'),
+    newConfirmPassword: joi.ref('newPassword'),
   });
   return Schema.validate(data, options);
 };
